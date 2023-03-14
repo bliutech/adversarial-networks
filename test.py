@@ -9,7 +9,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 model = CNN()
 
-model.load_state_dict(torch.load('model.pth'))
+model.load_state_dict(torch.load('models/cnn.pth'))
 model.to(device)
 model.eval()
 
