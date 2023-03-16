@@ -9,14 +9,16 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 model = CNN()
 
-model.load_state_dict(torch.load('models/cnn.pth'))
+model.load_state_dict(torch.load("models/cnn_batchsize1.pth"))
 model.to(device)
 model.eval()
 
 transform = transforms.Compose([transforms.ToTensor()])
-test_dataset = datasets.CIFAR10(root='./data', train=False, download=True, transform=transform)
+test_dataset = datasets.CIFAR10(root="./data", train=False, transform=transform)
 
-test_loader = torch.utils.data.DataLoader(dataset=test_dataset, batch_size=64, shuffle=False)
+test_loader = torch.utils.data.DataLoader(
+    dataset=test_dataset, batch_size=64, shuffle=True
+)
 
 
 criterion = torch.nn.CrossEntropyLoss()
