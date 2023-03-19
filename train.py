@@ -97,4 +97,4 @@ for epoch in range(EPOCHS):
         progress.write(f"{('[' + str(epoch + 1) + ']'):8s}   Train: {str(train_accuracy * 100):.6}% ({str(train_loss):.6})   Test: {str(test_accuracy * 100):.6}% ({str(test_loss):.6})")
 
 # Save the model checkpoint
-torch.save(model.state_dict(), 'models/cnn-lstm.pth')
+torch.save(model.state_dict(), 'models/cnn.pth')

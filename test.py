@@ -3,15 +3,15 @@ import numpy as np
 import torch
 from torchvision import datasets, transforms
 
-from networks.cnn import CNN
-# from networks.rnn import CNNLSTM
+# from networks.cnn import CNN
+from networks.rnn import CNNLSTM
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-model = CNN()
-# model = CNNLSTM()
+# model = CNN()
+model = CNNLSTM()
 
-model.load_state_dict(torch.load("models/cnn_fgsm.pth"))
+model.load_state_dict(torch.load("models/cnn-lstm.pth"))
 model.to(device)
 model.eval()
 

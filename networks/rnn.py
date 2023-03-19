@@ -3,24 +3,37 @@ from torch import nn
 class CNNLSTM(nn.Module):
     def __init__(self):
         super().__init__()
-        self.network = nn.Sequential(
-            nn.Conv2d(3, 32, kernel_size=3, stride=2, padding=1),
+        self.cnn = nn.Sequential(
+            nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
             nn.BatchNorm2d(32),
-            nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1),
+            nn.Conv2d(32, 32, kernel_size=3, stride=2, padding=1),
+            nn.ReLU(),
+            nn.BatchNorm2d(32),
+            nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
             nn.BatchNorm2d(64),
             nn.Conv2d(64, 64, kernel_size=3, stride=2, padding=1),
             nn.ReLU(),
             nn.BatchNorm2d(64),
-            nn.Flatten(),
-            nn.Linear(64 * 4 * 4, 64),
-            nn.LSTM(64, 64, 1, batch_first=True),
+            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.BatchNorm2d(64),
+            nn.Conv2d(64, 128, kernel_size=3, stride=2, padding=1),
+            nn.ReLU(),
+            nn.BatchNorm2d(128),
         )
+
+        self.lstm = nn.LSTM(128, 64, 3, batch_first=True)
+
+        self.fc = nn.Linear(64, 10)
     
     def forward(self, x):
-        out, _ = self.network(x) # extract the output tensor and the final hidden and cell state tensors from the LSTM layer
+        out = self.cnn(x)
+        out = out.view(out.size(0), -1, out.size(1))
+        out, _ = self.lstm(out)
+        out = self.fc(out[:, -1, :])
         return out
-    
+
     def size(self):
         return self.network.size()
