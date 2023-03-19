@@ -1,35 +1,38 @@
 #!/usr/bin/env python3
 # Reference: https://pytorch.org/tutorials/beginner/fgsm_tutorial.html
+
 import torch
 import torch.nn.functional as F
 import torchvision.transforms.functional as TF
-
-from ..networks.cnn import CNN
-
-
-class FGSMTransform1:
+from torchvision import datasets, transforms
+import numpy as np
+from networks.cnn import CNN
+    
+class FGSMTransform:
     """Perform a fast gradient sign attack on an image."""
 
-    def __init__(self, epsilon=0.005):
+    def __init__(self, epsilon=0.005, prob=1):
         self.epsilon = epsilon
-        self.model = CNN().to(
-            torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        )
+        self.model = CNN().to(torch.device("cuda" if torch.cuda.is_available() else "cpu"))
         self.model.load_state_dict(torch.load("./models/cnn_batchsize1.pth"))
         self.criterion = torch.nn.CrossEntropyLoss()
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.001)
-
-    def __call__(self, x):
-        # if we process a single image instead of batch, we need to add a fourth dimension
-        if x.dim() == 3:
-            x = x.unsqueeze(0)
-        x = x.to("cuda" if torch.cuda.is_available() else "cpu")
+        self.prob = prob #probability of applying fgsm on an image
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        
+    def __call__(self,sample):
+        x, labels = sample
+        if np.random.rand() >= self.prob:
+            return x
+        #if we process a single image instead of batch, we need to add a fourth dimension as the batch dimension
+        x = x.unsqueeze(0)
+        labels = labels.unsqueeze(0)
+        x = x.to(self.device)
         x.requires_grad = True
 
         # forward, backward pass to calculate gradient
         output = self.model(x)
         loss = self.criterion(output, labels)
-        self.optimizer.zero_grad()
+        self.model.zero_grad()
         loss.backward()
 
         # Collect gradients
@@ -39,5 +42,11 @@ class FGSMTransform1:
         sign_data_grad = data_grad.sign()
         perturbed_images = x + self.epsilon * sign_data_grad
         perturbed_images = torch.clamp(perturbed_images, 0, 1)
-        print(perturbed_images.size())
-        return perturbed_images
+        return perturbed_images.squeeze()
+    
+class ToTensor:
+    """Convert ndarrays in sample to Tensors. Works the same as transforms.ToTensor() but includes labels"""
+    def __call__(self, sample):
+        x, label = sample
+        return (transforms.functional.to_tensor(x), torch.from_numpy(np.array(label)))
+    
