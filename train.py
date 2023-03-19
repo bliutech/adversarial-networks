@@ -6,7 +6,8 @@ import numpy as np
 
 from tqdm import tqdm
 
-from networks.cnn import CNN
+# from networks.cnn import CNN
+from networks.rnn import CNNLSTM
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Device: {device}")
@@ -26,7 +27,8 @@ data_augmentation = transforms.Compose([
 ])
 
 # Create the model
-model = CNN()
+# model = CNN()
+model = CNNLSTM()
 model.to(device)
 
 EPOCHS = 10
@@ -95,4 +97,4 @@ for epoch in range(EPOCHS):
         progress.write(f"{('[' + str(epoch + 1) + ']'):8s}   Train: {str(train_accuracy * 100):.6}% ({str(train_loss):.6})   Test: {str(test_accuracy * 100):.6}% ({str(test_loss):.6})")
 
 # Save the model checkpoint
-torch.save(model.state_dict(), 'models/cnn.pth')
+torch.save(model.state_dict(), 'models/cnn-lstm.pth')
