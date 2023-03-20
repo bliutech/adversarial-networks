@@ -2,11 +2,10 @@ import numpy as np
 
 import torch
 from torchvision import transforms
-from torchvision.transforms import ToTensor
 
 from utils.data import CustomCIFAR
 
-from attacks.fgsm import FGSMTransform
+from attacks.fgsm import FGSMTransform, ToTensor, FGSMTransformCNNLSTM
 
 from networks.cnn import CNN
 from networks.rnn import CNNLSTM
@@ -145,4 +144,30 @@ def compare_test(base_path):
     print("\tAccuracies:", accuracies)
     print("\tLosses:", losses)
     return accuracies, losses
-    # print("Augmented model accuracies:", accuracies_fgsm)
+
+EPSILONS = [0, 0.005, 0.01, 0.015, 0.2]
+
+def compare_test_cnn_lstm(base_path, eps=EPSILONS):
+    """given ~two~ ONE model (changed from before), compare how they do under different epsilons of fgsm attack"""
+    #testing our trained model
+    base_model = CNNLSTM().to(device)
+    base_model.load_state_dict(torch.load(base_path))
+    base_model.eval()
+
+    criterion = torch.nn.CrossEntropyLoss()
+
+    accuracies = []
+    losses = []
+    for e in eps:
+        transform_fgsm = transforms.Compose([
+                ToTensor(),
+                FGSMTransformCNNLSTM(epsilon=e) #epsilon
+            ])
+        fgsm_test = CustomCIFAR(root='./data', train=False, transform=transform_fgsm)
+        fgsm_loader = torch.utils.data.DataLoader(dataset=fgsm_test, batch_size=64)
+        l, a = simple_test(test_loader=fgsm_loader, criterion=criterion, model=base_model)
+        accuracies.append(a)
+        losses.append(l)
+    print("\tAccuracies:", accuracies)
+    print("\tLosses:", losses)
+    return accuracies, losses
