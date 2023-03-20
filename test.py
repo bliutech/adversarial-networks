@@ -11,7 +11,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # model = CNN()
 model = CNNLSTM()
 
-model.load_state_dict(torch.load("models/cnn-lstm.pth"))
+model.load_state_dict(torch.load("models/cnn-lstm-batchsize1.pth"))
 model.to(device)
 model.eval()
 
