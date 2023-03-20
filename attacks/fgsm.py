@@ -11,18 +11,15 @@ from networks.cnn import CNN
 class FGSMTransform:
     """Perform a fast gradient sign attack on an image."""
 
-    def __init__(self, epsilon=0.005, prob=1):
+    def __init__(self, epsilon=0.005):
         self.epsilon = epsilon
         self.model = CNN().to(torch.device("cuda" if torch.cuda.is_available() else "cpu"))
-        self.model.load_state_dict(torch.load("./models/cnn_batchsize1.pth"))
+        self.model.load_state_dict(torch.load("./models/cnn.pth"))
         self.criterion = torch.nn.CrossEntropyLoss()
-        self.prob = prob #probability of applying fgsm on an image
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
     def __call__(self,sample):
         x, labels = sample
-        if np.random.rand() >= self.prob:
-            return x
         #if we process a single image instead of batch, we need to add a fourth dimension as the batch dimension
         x = x.unsqueeze(0)
         labels = labels.unsqueeze(0)
